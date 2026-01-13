@@ -1,0 +1,157 @@
+# Loan Repayment Risk Analysis & Data Engineering Pipeline
+
+## 📌 Overview
+This project focuses on building a **data engineering and analysis pipeline** for a fintech loan dataset using **PySpark**.  
+The goal is to **clean, preprocess, and structure raw loan application data** so it can later be used by **machine learning models** to:
+- Predict the likelihood of loan repayment
+- Assess credit risk
+- Estimate expected repayment duration
+
+The project emphasizes **data quality, consistency handling, feature engineering, and exploratory analysis**, which are critical in financial and banking systems.
+
+---
+
+## 🎯 Objectives
+- Clean and standardize raw fintech loan data using **PySpark distributed processing**
+- Handle missing, duplicated, and inconsistent values at scale
+- Engineer high-quality temporal and categorical features for downstream ML models
+- Provide statistical insights into loan repayment behavior through SQL and DataFrame analytics
+- Build a reproducible pipeline suitable for production deployment
+
+---
+
+## 🧠 Dataset Description
+The dataset contains loan application information including:
+- **Customer demographics**: Employment details, income, home ownership
+- **Loan characteristics**: Amount, term, interest rate, grade, purpose
+- **Temporal data**: Issue dates for time-series analysis
+- **Geographic data**: State, zip code for regional patterns
+- **Financial metrics**: Current balances, funded amounts
+- **Loan status**: Current, Fully Paid, Charged Off, etc.
+
+> ⚠️ The original dataset is in Parquet format and contains sensitive financial information.
+
+---
+
+## 🛠️ Technologies Used
+- **Python** - Core programming language
+- **PySpark** - Distributed data processing
+- **Google Colab** - Cloud execution environment
+- **Spark SQL** - Analytical querying
+- **PySpark ML** - Feature encoding utilities
+- **Jupyter Notebook** - Interactive development and documentation
+
+---
+
+## 🔄 Data Engineering Pipeline
+
+### 1. **Environment Setup & Data Loading**
+- Initialized Spark session with optimized partitioning (4 partitions)
+- Uploaded and loaded Parquet dataset from Google Drive
+- Verified initial data structure and partition count
+
+### 2. **Data Cleaning & Standardization**
+- Renamed all columns to lowercase with underscores
+- Detected missing values across all columns (0-93% missing rates)
+- Handled categorical missing values using **mode imputation** with fallback logic
+- Fixed numeric missing values with zero imputation
+- Standardized text formats and removed inconsistencies
+
+### 3. **Feature Encoding & Transformation**
+- **Label Encoding** applied to: `emp_length`, `state`, `purpose`
+- **One-Hot Encoding** applied to: `home_ownership`, `verification_status`, `term`
+- **Grade discretization**: Extracted first character for categorical representation
+- Created mapping tables for encoded values to maintain interpretability
+
+### 4. **Advanced Feature Engineering**
+- **Temporal features**: Previous loan dates and amounts within same grade/state
+- **Window functions**: Partitioned by grade and state for sequential analysis
+- **Income categorization**: Low (<40k), Medium (40k-80k), High (>80k) brackets
+- **Date parsing**: Standardized date formats for time-series operations
+
+### 5. **Analytical Queries & Insights**
+- **SQL and PySpark dual implementation** for analytical flexibility
+- **Five key analyses** covering risk patterns, funding gaps, verification impact, temporal behaviors, and regional variations
+- **Statistical aggregations**: Averages, sums, differences, and time gaps
+
+### 6. **Data Persistence**
+- Dropped original encoded columns after transformation
+- Saved cleaned dataset as Parquet for efficient storage
+- Preserved lookup tables for encoding traceability
+
+---
+
+## 📊 **Key Insights & Findings**
+
+### **Data Quality Insights**
+- **Missing Value Analysis**: 
+  - `annual_inc_joint` had 92.94% missing values (dropped/zero-filled)
+  - `emp_title` had 8.82% missing (filled with "Teacher" as mode)
+  - `int_rate` had 4.61% missing (filled with 0)
+- **Grade Column**: Originally contained numeric values (1-34) but represented letter grades; discretized to first digit
+
+### **Risk Analysis Patterns**
+1. **Current Loans by Income & Employment**:
+   - High-income borrowers with 10+ years employment received largest average loans (~$20,786)
+   - Medium-income borrowers showed highest interest rates (12.4-13.5%)
+   - Low-income borrowers had smallest loan amounts but relatively high rates
+
+2. **Verification Status Impact**:
+   - Florida had highest total loan amounts for both verified and unverified borrowers
+   - New York showed highest "Source Verified" loan volume
+   - Verification patterns varied significantly by state
+
+3. **Funding Patterns**:
+   - **No difference between loan_amount and funded_amount** across all grades
+   - Suggests full funding of approved loans in this dataset
+
+### **Temporal Behavior**
+1. **Time Gaps Between Loans**:
+   - Grade 1 loans had shortest average gap (~0.19 days)
+   - Grade 4-5 loans showed longest gaps (2.1-2.2 days)
+   - Consistent sequential lending patterns within grades
+
+2. **State-Level Loan Amount Changes**:
+   - AK-Grade 3 showed largest positive difference (+$5,762.5 between consecutive loans)
+   - Negative differences observed in several state-grade combinations
+   - Regional lending patterns show both conservative and aggressive behaviors
+
+### **Data Distribution**
+- **Loan Status Distribution**:
+  - Current: 16,977 (64.1%)
+  - Fully Paid: 7,692 (29.1%)
+  - Charged Off: 1,758 (6.6%)
+  - Minor delinquencies: <2%
+- **Primary Purpose**: Debt consolidation dominated loan purposes
+- **Common Verification**: Mix of Verified, Source Verified, and Not Verified statuses
+
+---
+
+## 🚀 **Production-Ready Features**
+
+### **Strengths of the Implementation**
+- **Scalable Design**: Proper partitioning and distributed processing
+- **Reproducible Pipeline**: Clear step-by-step transformations
+- **Data Lineage**: Mapping tables preserve encoding logic
+- **Dual Query Capability**: Both SQL and DataFrame APIs supported
+- **Error Handling**: Fallback logic for edge cases
+
+### **Areas for Enhancement**
+1. **Performance Optimization**:
+   - Cache intermediate DataFrames for repeated operations
+   - Consider broadcast joins for small lookup tables
+   - Monitor shuffle operations and adjust partitioning
+
+2. **Model Readiness**:
+   - Add feature scaling for numerical columns
+   - Create train/test splits with temporal validation
+   - Develop feature importance analysis
+
+3. **Monitoring & Validation**:
+   - Add data quality checks at each transformation stage
+   - Implement schema validation
+   - Create data drift detection mechanisms
+
+---
+
+## 📁 **Project Structure**
